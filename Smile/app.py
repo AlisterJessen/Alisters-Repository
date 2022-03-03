@@ -1,7 +1,11 @@
 from flask import Flask, render_template
+import sqlite3
+from sqlite3 import Error
 
 app = Flask(__name__)
 DATABASE = "smile.db"
+
+
 
 @app.route('/')
 def render_homepage():
@@ -9,11 +13,11 @@ def render_homepage():
 
 def create_connection(db_file):
     try:
-        connection = sqlite3.connection(db_file)
+        connection = sqlite3.connect(db_file)
         return connection
     except Error as e:
         print(e)
-    return none
+    return None
 
 
 @app.route('/hi')
@@ -25,10 +29,10 @@ def hi():
 def render_menu_page():
     con = create_connection(DATABASE)
 
-    query = "SELECT name, description, volume, price filename FROM product"
+    query = "SELECT name, description, volume, price, image FROM product"
     cur = con.cursor() #Creates a cursor to wrist the query
     cur.execute(query) #runs the query
-    product_list = cur.fetchall
+    product_list = cur.fetchall()
 
     return render_template('menu.html', products=product_list)
 
@@ -36,6 +40,17 @@ def render_menu_page():
 @app.route('/contact')
 def render_contact_page():
     return render_template('contact.html')
+
+@app.route('/signup')
+def render_signup_page():
+    return render_template('signup.html')
+
+@app.route('/login')
+def render_login_page():
+    return render_template('login.html')
+
+
+
 
 
 app.run(host='0.0.0.0', debug=True)
