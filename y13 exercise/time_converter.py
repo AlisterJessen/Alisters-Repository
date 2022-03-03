@@ -1,0 +1,2 @@
+seconds = int(input()
+
