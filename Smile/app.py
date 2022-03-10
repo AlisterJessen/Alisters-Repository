@@ -49,8 +49,8 @@ def render_signup_page():
 
 
 p.route('/signup', methods=['GET', 'POST'])
-render_signup_page():
-   request.method == 'POST':
+def render_signup_page():
+   if request.method == 'POST':
     print(request.form)
     frame = request.form.get('fname').title().strip()
     lname = request.form.get('lname').title().strip()
@@ -62,22 +62,39 @@ render_signup_page():
         return redirect('/signup.html?error=Passwrods+do+not+match')
 
     if len(password) < 8:
-        return redirect('/signup.html?error=Passwrods+must+be+at+lease+8+characters')
+        return redirect('/signup.html?error=Passwrods+must+be+at+least+8+characters')
 
     con = create_connection(DATABASE)
 
 
     query = "INSERT INTO customer (fname, lname, email, password) VALUES(?,?,?,?)"
 
-return render_template('signup.html')
+    return render_template('signup.html')
 
 @app.route('/login')
 def render_login_page():
+
+def render_signup_page():
+   if request.method == 'POST':
+    print(request.form)
+    email = request.form.get('email').title().strip()
+    password = request.form.get('password')
+
+    con = create_connection(DATABASE)
+    query = "SELECT fname FROM product WHERE email=? AND password=?"\
+    cur = con.cursor()
+    cur.execute(query, (email, password))
+    user.data = cur.fetchall()
+    con.close()
+
+    try:
+        user_id = user_data[0][0]
+        first_name = user_data[0][1]
+    except indexError:
+        return redirect("login?error=Email+or+password+is+incorrect")
+    print(user_id, first_name)
+
     return render_template('login.html')
-
-
-
-
 
 app.run(host='0.0.0.0', debug=True)
 
