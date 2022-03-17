@@ -52,8 +52,16 @@ def render_contact_page():
 @app.route('/logout')
 def render_logout_page():
     [session.pop(key) for key in list(session.keys())]
-    print(list*session.keys())
+    print(list(session.keys()))
     return redirect('/?message=see+you+next+time')
+
+def is_logged_in():
+    if session.get('email') is None:
+        print("not logged in")
+        return False
+    else:
+        print("Logged in")
+        return True
 
 
 
@@ -65,9 +73,9 @@ def render_signup_page():
     lname = request.form.get('lname').title().strip()
     email = request.form.get('email').title().strip()
     password = request.form.get('password')
-    pasword2 = request.form.get('password2')
+    password2 = request.form.get('password2')
 
-    if not passwrod != password2:
+    if not password != password2:
         return redirect('/signup.html?error=Passwords+do+not+match')
 
     if len(password) < 8:
@@ -76,57 +84,44 @@ def render_signup_page():
     hashed_password = bcrypt.genarate_passwrod_hash(password)
 
     con = create_connection(DATABASE)
+
     query = "INSERT INTO customer (fname, lname, email, password) VALUES(?,?,?,?)"
 
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def render_login_page():
-   if request.method == 'POST':
-    print(request.form)
-    email = request.form.get('email').lower().strip()
-    password = request.form.get('password')
-    hashed_password = request.form.get('password')
+    if request.method == 'POST':
+        print(request.form)
+        email = request.form.get('email').lower().strip()
+        password = request.form.get('password')
+        hashed_password = request.form.get('password')
 
-    con = create_connection(DATABASE)
-    query = "SELECT id, fname FROM customer WHERE email=? AND password=?"
-    cur = con.cursor()
-    cur.execute(query, (email, password))
-    user.data = cur.fetchall()
-    con.close()
+        con = create_connection(DATABASE)
+        query = "SELECT id, fname FROM customer WHERE email=? AND password=?"
+        cur = con.cursor()
+        cur.execute(query, (email, password))
+        user_data = cur.fetchall()
+        con.close()
 
-    if user_data:
-        user_id = user_data[0][0]
-        first_name = user_data[0][1]
-        db_password = user_data[0][2]
-    else:
-        return redirect("login?error=Email+or+password+is+incorrect")
+        if user_data:
+            user_id = user_data[0][0]
+            first_name = user_data[0][1]
+            db_password = user_data[0][2]
+        else:
+            return redirect("/login?error=Email+or+password+is+incorrect")
+        print(user_id, first_name)
+        if not bcrypt.check_password_hash(db_password, password):
+            return redirect("/login?error=Email+or+password+is+incorrect")
 
-    session['email'] = email
-    session['userid'] = user_id
-    session['fname'] = first_name
-    session['cart'] = []
-    return redirect('/')
-
-
-
-
-
-
-
-def is_logged_in():
-    if session.get('enmail') is None:
-        print("not logged in")
-        return False
-    else:
-        print("Logged in")
-        return True
+        session['email'] = email
+        session['userid'] = user_id
+        session['fname'] = first_name
+        session['cart'] = []
+        return redirect('/menu')
 
 
 
-
-
-    print(user_id, first_name)
 
     return render_template('login.html')
 
