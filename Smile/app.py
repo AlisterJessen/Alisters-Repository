@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
-app.secret_key = "app.secret_key"
+app.secret_key = "hb31v1d2i12f"
 DATABASE = "smile.db"
 
 
@@ -24,21 +24,17 @@ def render_homepage():
     return render_template('home.html')
 
 
-
-@app.route('/hi')
-def hi():
-    return 'hello alister'
-
-
 @app.route('/menu')
 def render_menu_page():
 
     con = create_connection(DATABASE)
 
     query = "SELECT name, description, volume, price, image FROM product"
+
     cur = con.cursor() #Creates a cursor to wrist the query
     cur.execute(query) #runs the query
     product_list = cur.fetchall()
+    con.close()
 
     return render_template('menu.html', products=product_list)
 
@@ -68,37 +64,42 @@ def is_logged_in():
 @app.route('/signup', methods=['GET', 'POST'])
 def render_signup_page():
    if request.method == 'POST':
-    print(request.form)
-    fname = request.form.get('fname').title().strip()
-    lname = request.form.get('lname').title().strip()
-    email = request.form.get('email').title().strip()
-    password = request.form.get('password')
-    password2 = request.form.get('password2')
+       print(request.form)
+       fname = request.form.get('fname')
+       lname = request.form.get('lname')
+       email = request.form.get('email')
+       password = request.form.get('password')
+       password2 = request.form.get('password2')
 
-    if not password != password2:
-        return redirect('/signup.html?error=Passwords+do+not+match')
 
-    if len(password) < 8:
-        return redirect('/signup.html?error=Passwords+must+be+at+least+8+characters')
 
-    hashed_password = bcrypt.genarate_passwrod_hash(password)
+       hashed_password = bcrypt.genarate_passwrod_hash(password)
 
-    con = create_connection(DATABASE)
+       con = create_connection(DATABASE)
 
-    query = "INSERT INTO customer (fname, lname, email, password) VALUES(?,?,?,?)"
+       query = "INSERT INTO customer (id, fname, lname, email, password) VALUES(NULL,?,?,?,?)"
 
-    return render_template('signup.html')
+       cur = con.cursor()  # Creates a cursor to wrist the query
+       cur.execute(query, (fname, lname, email, password))  # runs the query
+       con.commit()
+       con.close()
+
+   return render_template('signup.html')
+
+
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def render_login_page():
     if request.method == 'POST':
         print(request.form)
         email = request.form.get('email').lower().strip()
-        password = request.form.get('password')
+        password = request.form.get('password').strip()
         hashed_password = request.form.get('password')
 
+
+        query = "SELECT id, fname FROM customer WHERE email AND password"
         con = create_connection(DATABASE)
-        query = "SELECT id, fname FROM customer WHERE email=? AND password=?"
         cur = con.cursor()
         cur.execute(query, (email, password))
         user_data = cur.fetchall()
