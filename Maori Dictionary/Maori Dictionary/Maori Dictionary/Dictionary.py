@@ -29,20 +29,18 @@ def render_homepage():
     return render_template('home.html', categories=get_categories())
 
 
-@app.route('/menu')
-def render_menu_page():
+@app.route('/category/<cat_name>')
+def render_menu_page(cat_name):
     con = create_connection(DATABASE)
 
-    query = "SELECT maori, english, category, definition FROM category"
+    query = "SELECT maori, english, category, definition, level FROM category where category=?"
 
     cur = con.cursor()  # Creates a cursor to wrist the query
-    cur.execute(query)  # runs the query
-    category_list = cur.fetchall()
+    cur.execute(query,(cat_name, ))  # runs the query
+    word_list = cur.fetchall()
     con.close()
 
-    return render_template('2menu.html', categories=category_list)
-
-
+    return render_template('category.html', categories=get_categories(), words=word_list)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -57,7 +55,7 @@ def render_signup_page():
 
 
 
-       hashed_password = bcrypt.genarate_passwrod_hash(password)
+
 
        con = create_connection(DATABASE)
 
